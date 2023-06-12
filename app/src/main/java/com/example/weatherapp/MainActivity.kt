@@ -22,6 +22,9 @@ import java.util.*
 class MainActivity : AppCompatActivity() {
     private val CITY: String = "dhaka"
     private val API: String = "56bd949392a70482feaaf605cdc60d85"
+    private val LOCATION_PERMISSION_REQUEST_CODE = 100
+    private val MIN_TIME_BETWEEN_UPDATES: Long = 5000
+    private val MIN_DISTANCE_CHANGE_FOR_UPDATES: Float = 100f
 
     private lateinit var locationManager: LocationManager
     private lateinit var locationListener: LocationListener
@@ -44,7 +47,7 @@ class MainActivity : AppCompatActivity() {
                 locationManager.removeUpdates(this)
             }
 
-            override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {}
+            override fun onStatusChanged(provider: String, status: Int, extras: Bundle?) {}
 
             override fun onProviderEnabled(provider: String) {}
 
@@ -102,10 +105,26 @@ class MainActivity : AppCompatActivity() {
                 val sys = jsonObj.getJSONObject("sys")
                 val wind = jsonObj.getJSONObject("wind")
                 val weather = jsonObj.getJSONArray("weather").getJSONObject(0)
-
+//                val cityName = jsonObj.getString("locationtext")
+//                val temperature = main.getString("temp") + "°C"
                 val updatedAt: Long = jsonObj.getLong("dt")
+
+
+                /* Extracting location data */
+                val location = jsonObj.getString("name")
+                val locationTextView = findViewById<TextView>(R.id.locationtext)
+                locationTextView.text = location
+
+/* Extracting temperature */
+                val temperature = main.getString("temp")
+                val tempTextView = findViewById<TextView>(R.id.temp)
+                tempTextView.text = temperature
+
+
+
+
                 val updatedAtText =
-                    SimpleDateFormat("dd/MM/yyyy hh:mm a", Locale.ENGLISH).format(
+                    "Updated at: " + SimpleDateFormat("dd/MM/yyyy hh:mm a", Locale.ENGLISH).format(
                         Date(updatedAt * 1000)
                     )
                 val temp = main.getString("temp") + "°C"
@@ -122,10 +141,9 @@ class MainActivity : AppCompatActivity() {
                 val address = jsonObj.getString("name") + ", " + sys.getString("country")
 
                 /* Populating extracted data into our views */
-                findViewById<TextView>(R.id.locationtext).text = address
-
-                findViewById<TextView>(R.id.status).text = weatherDescription.capitalize()
-                findViewById<TextView>(R.id.temp).text = temp
+//                findViewById<TextView>(R.id.locationtext).text = location
+                findViewById<TextView>(R.id.status).text = weatherDescription.capitalize(Locale.getDefault())
+//                findViewById<TextView>(R.id.temp).text = temperature
                 findViewById<TextView>(R.id.temp_min).text = tempMin
                 findViewById<TextView>(R.id.temp_max).text = tempMax
                 findViewById<TextView>(R.id.sunrise).text =
@@ -136,19 +154,14 @@ class MainActivity : AppCompatActivity() {
                 findViewById<TextView>(R.id.pressure).text = pressure
                 findViewById<TextView>(R.id.humidity).text = humidity
 
-                /* Views populated, Hiding the loader, Showing the main design */
+                /* Views populated, hide the loader and show the main design */
                 findViewById<ProgressBar>(R.id.loader).visibility = View.GONE
                 findViewById<RelativeLayout>(R.id.homescreen).visibility = View.VISIBLE
+
             } catch (e: Exception) {
                 findViewById<ProgressBar>(R.id.loader).visibility = View.GONE
                 findViewById<TextView>(R.id.err).visibility = View.VISIBLE
             }
         }
-    }
-
-    companion object {
-        private const val LOCATION_PERMISSION_REQUEST_CODE = 100
-        private const val MIN_TIME_BETWEEN_UPDATES: Long = 10000 // 10 seconds
-        private const val MIN_DISTANCE_CHANGE_FOR_UPDATES: Float = 0f // 0 meters
     }
 }
